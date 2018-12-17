@@ -1,38 +1,40 @@
+//requiring the modules
 const http = require('http');
 const url = require('url');
-const port = 3000;
-const httpServer = http.createServer(function (req, res) {
-    requestHandler(req, res);
-});
+let handlers = {};
 
-let handler = {};
-handler.helloworld = function (callback) {
-    callback(200, 'Hello World');
-}
-
-handler.notfound = function (callback) {
+handlers.notFound = function (data, callback) {
     callback(404);
 }
-
+handlers.helloworld = function (data, callback) {
+    console.log(`${JSON.stringify(data)}`);
+    callback(200, {
+        "response": "Hello World"
+    });
+}
 let router = {
-    'hello': handler.helloworld
+    'hello': handlers.helloworld
 }
-
-let requestHandler = function (req, res) {
-    let parseUrl = url.parse(req.url, true);
-    let path = parseUrl.pathname;
+const server = http.createServer(function (req, res) {
+    let parsedUrl = url.parse(req.url, true);
+    let path = parsedUrl.pathname;
     let trimmedPath = path.replace(/^\/+|\/+$/g, '');
-    req.on('end', function () {
-        let chosenHandler = typeof (router[trimmedPath]) !== 'undefined' ? handler.helloworld : handler.notfound;
-        console.log(`chosen handler : ${chosenHandler}`);
-        chosenHandler(function (statusCode, payload) {
-            res.writeHead(statusCode);
-            console.log(`statuscode : ${statusCode} payload : ${payload}`);
-            res.end(payload);
-        })
-    })
-}
-
-httpServer.listen(port, function () {
-    console.log(`listening on port ${port}`);
+    
+    let method = req.method.toLocaleLowerCase();
+    let buffer = '';
+    
+    let chosenHandler = typeof (router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
+    if (method !== 'post') {
+        chosenHandler = handlers.notFound;
+    }
+    chosenHandler(buffer, function (statusCode, payload) {
+        statusCode = typeof (statusCode) == 'number' ? statusCode : 200;
+        payload = typeof (payload) == 'object' ? payload : {};
+        res.writeHead(statusCode);
+        var payloadStr = JSON.stringify(payload);
+        res.end(payloadStr);
+    });
+})
+server.listen(3000, function () {
+    console.log('listening on port 3000!');
 })
