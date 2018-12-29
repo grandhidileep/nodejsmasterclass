@@ -4,20 +4,21 @@
  */
 
 // Dependencies
-var fs = require('fs');
-var path = require('path');
-var helpers = require('./helpers');
+const fs = require('fs');
+const path = require('path');
+const helpers = require('./helpers');
 
 // Container for module (to be exported)
-var data = {};
+let lib = {};
 
 // Base directory of data folder
-data.baseDir = path.join(__dirname,'/../.data/');
+lib.baseDir = path.join(__dirname,'/../.data/');
+
 
 // Write data to a file
-data.create = function(dir,file,data,callback){
+lib.create = function(dir,file,data,callback){
   // Open the file for writing
-  fs.open(data.baseDir+dir+'/'+file+'.json', 'wx', function(err, fileDescriptor){
+  fs.open(lib.baseDir+dir+'/'+file+'.json', 'wx', function(err, fileDescriptor){
     if(!err && fileDescriptor){
       // Convert data to string
       var stringData = JSON.stringify(data);
@@ -37,15 +38,16 @@ data.create = function(dir,file,data,callback){
         }
       });
     } else {
-      callback('Could not create new file, it may already exist');
+      callback(err);
+      //callback('Could not create new file, it may already exist');
     }
   });
 
 };
 
 // Read data from a file
-data.read = function(dir,file,callback){
-  fs.readFile(data.baseDir+dir+'/'+file+'.json', 'utf8', function(err,data){
+lib.read = function(dir,file,callback){
+  fs.readFile(lib.baseDir+dir+'/'+file+'.json', 'utf8', function(err,data){
     if(!err && data){
       var parsedData = helpers.parseJsonToObject(data);
       callback(false,parsedData);
@@ -57,15 +59,14 @@ data.read = function(dir,file,callback){
 
 // Update data in a file
 lib.update = function(dir,file,data,callback){
-
   // Open the file for writing
-  fs.open(data.baseDir+dir+'/'+file+'.json', 'r+', function(err, fileDescriptor){
+  fs.open(lib.baseDir+dir+'/'+file+'.json', 'r+', function(err, fileDescriptor){
     if(!err && fileDescriptor){
       // Convert data to string
       var stringData = JSON.stringify(data);
 
       // Truncate the file
-      fs.truncate(fileDescriptor,function(err){
+      fs.ftruncate(fileDescriptor,function(err){
         if(!err){
           // Write to file and close it
           fs.writeFile(fileDescriptor, stringData,function(err){
@@ -86,17 +87,17 @@ lib.update = function(dir,file,data,callback){
         }
       });
     } else {
-      callback('Could not open file for updating, it may not exist yet');
+      callback(err);
     }
   });
 
 };
 
 // Delete a file
-data.delete = function(dir,file,callback){
+lib.delete = function(dir,file,callback){
 
   // Unlink the file from the filesystem
-  fs.unlink(data.baseDir+dir+'/'+file+'.json', function(err){
+  fs.unlink(lib.baseDir+dir+'/'+file+'.json', function(err){
     callback(err);
   });
 
@@ -104,4 +105,4 @@ data.delete = function(dir,file,callback){
 
 
 // Export the module
-module.exports = data;
+module.exports = lib;

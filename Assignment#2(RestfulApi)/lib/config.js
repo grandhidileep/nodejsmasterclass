@@ -9,18 +9,17 @@ enviornments.staging = {
     'httpPort': 3000,
     'httpsPort': 3001,
     'envName': 'staging',
-    'hashingSecret': 'stagingHashSecret',
-
+    'hashingSecret': 'stagingHashSecret'
 }
 
 //defining production enviornment specific configurations
-enviornments.staging = {
+enviornments.production = {
     'httpPort': 5000,
     'httpsPort': 5001,
     'envName': 'production',
-    'hashingSecret': 'productionSpecificStrongHashSecret',
-
+    'hashingSecret': 'productionSpecificStrongHashSecret'
 }
+
 
 // export the configuration according the enviornment selected ,
 // else default to staging

@@ -45,7 +45,6 @@ server.commonServer = function (req, res) {
 
     req.on('end', function () {
         dataBuffer += decoder.end();
-
         let chosenHandler = typeof (server.router[trimmedPath]) !== 'undefined' ? server.router[trimmedPath] : handlers.notFound;
         let data = {
             'trimmedPath': trimmedPath,
@@ -54,7 +53,6 @@ server.commonServer = function (req, res) {
             'headers': headers,
             'payload': helpers.parseJsonToObject(dataBuffer)
         };
-
         chosenHandler(data, function (statusCode, payload) {
             statusCode = typeof (statusCode) == 'number' ? statusCode : 200;
             payload = typeof (payload) == 'object' ? payload : {};
